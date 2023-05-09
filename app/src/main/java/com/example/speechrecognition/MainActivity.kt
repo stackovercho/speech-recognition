@@ -29,6 +29,9 @@ class MainActivity : AppCompatActivity() {
         // set up everything for speech recognition
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
 
+        val handler = SpeechHandler()
+        speechRecognizer.setRecognitionListener(handler)
+
         val voiceGranted: Int =
             ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
         if (voiceGranted == PackageManager.PERMISSION_GRANTED) {
@@ -44,7 +47,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun listen() {
-
+        Log.d(MA, "inside start listening")
+        speechRecognizer.startListening(intent)
     }
 
     inner class PermissionResults : ActivityResultCallback<Boolean> {
@@ -67,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onRmsChanged(rmsdB: Float) {
-            Log.d(MA, "inside onRmsChanged")
+            // Log.d(MA, "inside onRmsChanged")
         }
 
         override fun onBufferReceived(buffer: ByteArray?) {
@@ -80,10 +84,31 @@ class MainActivity : AppCompatActivity() {
 
         override fun onError(error: Int) {
             Log.d(MA, "inside onError")
+            listen()
         }
 
         override fun onResults(results: Bundle?) {
             Log.d(MA, "inside onResults")
+            if (results != null) {
+                val speechResults = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                val speechScores = results.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES)
+                Log.d(MA, "results: $speechResults")
+                Log.d(MA, "scores: $speechScores")
+                val i = 0
+                if (speechResults != null && speechScores != null) {
+                    for (word in speechResults) {
+                        Log.d(MA, "result: $word")
+                        if (i < speechScores.size)
+                            Log.d(MA, "confidence score = ${speechScores[i]}")
+                    }
+                    tv.text = speechResults[0]
+                } else {
+                    Log.w(MA, "no results!!")
+                }
+            } else {
+                Log.w(MA, "params is null!!  no results possible")
+            }
+            listen()
         }
 
         override fun onPartialResults(partialResults: Bundle?) {
