@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onError(error: Int) {
-            Log.d(MA, "inside onError")
+            Log.d(MA, "inside onError $error")
             listen()
         }
 
